@@ -1,4 +1,4 @@
-import { Router } from "express";
+import e, { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
@@ -62,16 +62,16 @@ router.post("/register", async (req, res) => {
     },
   });
 
-  const token = jwt.sign({ userId: user.id }, "secret");
+  const token = jwt.sign({ userId: user.id }, process.env.ACCESS_TOKEN_SECRET);
 
-  return res.status(200).json({ success: true, token });
+  return res.status(200).json({ success: true, accessToken: token });
 });
 
 router.post("/username", auth, (req, res) => {
   return res.send(req.user.username);
 });
 
-router.delete("/", auth, async (req, res) => {
+router.delete("/account/delete", auth, async (req, res) => {
   await prisma.user.delete({
     where: {
       id: req.user.id,
@@ -81,12 +81,12 @@ router.delete("/", auth, async (req, res) => {
   return res.status(200).json({ success: true });
 });
 
-router.patch("/username", auth, async (req, res) => {
+router.patch("/username/update", auth, async (req, res) => {
   const { username } = req.body;
 
   await prisma.user.update({
     data: {
-      username,
+      username: username,
     },
     where: {
       id: req.user.id,
@@ -94,4 +94,55 @@ router.patch("/username", auth, async (req, res) => {
   });
 
   return res.status(200).json({ success: true });
+});
+
+router.patch("/email/update", auth, async (req, res) => {
+  const { email } = req.body;
+
+  await prisma.user.update({
+    data: {
+      email: email,
+    },
+    where: {
+      id: req.user.id,
+    },
+  });
+
+  return res.status(200).json({ success: true });
+});
+
+router.patch("/password/update", auth, async (req, res) => {
+  const { password } = req.body;
+
+  await prisma.user.update({
+    data: {
+      hash: password,
+    },
+    where: {
+      id: req.user.id,
+    },
+  });
+
+  return res.status(200).json({ success: true });
+});
+
+router.post("/username/availability", async (req, res) => {
+  const { username } = req.body;
+
+  const result = await prisma.user.findUnique({
+    where: {
+      username: username,
+    },
+  });
+
+  if (result) {
+    return res
+      .status(400)
+      .json({ success: false, error: "User already exists" });
+  } else {
+    return res.json({
+      success: true,
+      message: `Username ${username} is available!`,
+    });
+  }
 });

@@ -7,7 +7,7 @@ import * as bodyParser from "body-parser";
 import * as dotENV from "dotenv";
 
 import { PORT } from "./utils/PORT.json";
-import { router as authV1 } from "./routes/auth";
+import { router as authRoute } from "./routes/auth";
 
 export class Server {
   public app: express.Application;
@@ -52,6 +52,6 @@ export class Server {
       res.send("App");
     });
 
-    this.app.use("/v1/auth", authV1);
+    this.app.use("/api/v1/auth", authRoute);
   }
 }

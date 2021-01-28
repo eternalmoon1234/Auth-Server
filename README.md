@@ -1,1 +1,1 @@
-# Auth Server
+# JWT Auth Server
